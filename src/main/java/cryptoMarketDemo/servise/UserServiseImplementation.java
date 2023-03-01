@@ -29,13 +29,11 @@ public class UserServiseImplementation implements UserService {
                 return "Такой пользователь уже зарегистрирован";
             }
             String query_in = String.format("insert into user_table (secret_key, user_type, username, email, BTC_WALLET, TON_wallet, RUB_wallet) values ('%s', 'user', '%s', '%s', 0, 0, 0)", secret_key, username, email);
-            stmt.executeQuery(query_in);
+            stmt.executeUpdate(query_in);
             return secret_key;
         }
         catch (SQLException e) {
             System.out.println(e.getMessage());
-            return secret_key;
-
         }
     }
 
@@ -63,15 +61,17 @@ public class UserServiseImplementation implements UserService {
     public HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) throws SQLException {
         try (Statement stmt = con.createStatement()) {
             String query_out = String.format("select RUB_wallet from user_table where secret_key = '%s'", secret_key);
-            ResultSet rs = stmt.executeQuery(query_out);
-            BigDecimal oldBalance = rs.getBigDecimal("RUB_wallet");
-            BigDecimal newBalance = oldBalance.add(balance);
-
-            String query_in = String.format("update user_table set RUB_wallet = %f where secret_key = '%s'", newBalance, secret_key);
-            stmt.executeQuery(query_in);
+            ResultSet rs1 = stmt.executeQuery(query_out);
+            if (rs1.next()){
+                BigDecimal oldBalance = rs1.getBigDecimal("RUB_wallet");
+                balance = balance.add(oldBalance);
+            }
+            String query_in = String.format("update user_table set RUB_wallet = %f where secret_key = '%s'", balance, secret_key).replace(',', '.');
+            stmt.executeUpdate(query_in);
             HashMap<String, BigDecimal> res = new HashMap<>();
             res.put("RUB_balance", balance);
             return res;
+
         }
         catch (SQLException e) {
             System.out.println(e.getMessage());
