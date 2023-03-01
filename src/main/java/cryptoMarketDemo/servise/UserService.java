@@ -18,7 +18,7 @@ public interface UserService {
 
     User register(User user); // регистрация
 
-    User seeBalance(Long id); //просмотр баланса кошелька
+    HashMap<String, BigDecimal> seeBalance(String secret_key, Connection con) throws SQLException; //просмотр баланса кошелька
 
     User topUpTheBalance(Long id, BigDecimal balance); //пополнение кошелька
 

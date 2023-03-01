@@ -43,9 +43,19 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
+
     @Override
-    public User seeBalance(Long id) {
-        return null;
+    public HashMap<String, BigDecimal> seeBalance(String secret_key, Connection con) throws SQLException {
+        Statement stmt = con.createStatement();
+        String query = "select u.BTC_wallet, u.TON_wallet, u.RUB_wallet from user_table u WHERE u.secret_key = " + "'" + secret_key + "'";
+        ResultSet rs = stmt.executeQuery(query);
+        HashMap<String, BigDecimal> result = new HashMap<>();
+        while (rs.next()) {
+            result.put("BTC_wallet", rs.getBigDecimal("BTC_wallet"));
+            result.put("TON_wallet", rs.getBigDecimal("TON_wallet"));
+            result.put("RUB_wallet", rs.getBigDecimal("RUB_wallet"));
+        }
+        return result;
     }
 
     @Override

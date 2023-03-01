@@ -10,9 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -20,23 +22,12 @@ import java.util.List;
 public class UserRestController {
     @Autowired
     private UserService userService;
-    //@RequestMapping(value = "{secret_key}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    //public ResponseEntity<User> getUser(@PathVariable("secret_key") String secret_key){
-    //    if (secret_key == null) {
-    //        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    //    }
-//
-    //    User user = this.userService.findUserBySecretKey(secret_key);
-//
-    //    if (user == null) {
-    //        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //    }
-//
-    //    return new ResponseEntity<>(user, HttpStatus.OK);
-    //}
+
+
+
     @GetMapping("getByEmail")
     public ResponseEntity<List<User>> getUserbyEmail(@RequestHeader("email") String email) throws SQLException {
-         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
         if (email == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -48,6 +39,22 @@ public class UserRestController {
         }
 
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @GetMapping("seeBalance")
+    public ResponseEntity<HashMap<String, BigDecimal>> seeBalance(@RequestHeader("secret_key") String secret_key) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        HashMap<String, BigDecimal> hm = this.userService.seeBalance(secret_key, con);
+
+        if (secret_key == null) { //TODO переписать эту проверку
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(hm, HttpStatus.OK);
     }
 
 
