@@ -50,7 +50,7 @@ public class UserRestController {
     }
 
     @PostMapping("topUpTheBalance")
-    public ResponseEntity<HashMap<String, BigDecimal>> topUpTheBalance(@RequestHeader("secret_key") String secret_key, @RequestHeader("balance") BigDecimal balance) throws SQLException {
+    public ResponseEntity<HashMap<String, BigDecimal>> topUpTheBalance(@RequestHeader("secret_key") String secret_key, @RequestHeader("RUB_wallet") BigDecimal balance) throws SQLException {
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
         if (secret_key == null || balance == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

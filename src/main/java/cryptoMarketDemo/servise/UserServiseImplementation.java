@@ -61,6 +61,22 @@ public class UserServiseImplementation implements UserService {
 
     @Override
     public HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) throws SQLException {
+        try (Statement stmt = con.createStatement()) {
+            String query_out = String.format("select RUB_wallet from user_table where secret_key = '%s'", secret_key);
+            ResultSet rs = stmt.executeQuery(query_out);
+            BigDecimal oldBalance = rs.getBigDecimal("RUB_wallet");
+            BigDecimal newBalance = oldBalance.add(balance);
+
+            String query_in = String.format("update user_table set RUB_wallet = %f where secret_key = '%s'", newBalance, secret_key);
+            stmt.executeQuery(query_in);
+            HashMap<String, BigDecimal> res = new HashMap<>();
+            res.put("RUB_balance", balance);
+            return res;
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
         return null;
     }
 
