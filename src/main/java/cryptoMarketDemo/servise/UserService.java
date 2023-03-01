@@ -20,7 +20,7 @@ public interface UserService {
 
     HashMap<String, BigDecimal> withdraw(String secret_key,String currency,BigDecimal count,String credit_card,Connection con) throws SQLException;  //вывод денег с кошелька
 
-    User seeTheExchangeRate(Long id, String currency); //просмотр актуального курса валют
+    HashMap<String, BigDecimal> seeTheExchangeRate(String secret_key,String currency, Connection con) throws SQLException; //просмотр актуального курса валют
 
     User exchangeCurrency(Long id, String currencyFrom, String currencyTo, BigDecimal amount); //обмен валюты
 

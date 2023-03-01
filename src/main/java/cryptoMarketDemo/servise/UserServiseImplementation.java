@@ -119,10 +119,30 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
-
-
     @Override
-    public User seeTheExchangeRate(Long id, String currency) {
+    public HashMap<String, BigDecimal> seeTheExchangeRate(String secret_key, String currency, Connection con){
+        try (Statement stmt = con.createStatement()) {
+            String query_out = String.format("Select * from exchange_rate_table where base_currency = '%s'", currency);
+            ResultSet rs1 = stmt.executeQuery(query_out);
+            if (rs1.next()){
+                HashMap<String, BigDecimal> res = new HashMap<>();
+                res.put("BTS", rs1.getBigDecimal("BTC_wallet"));
+                res.put("TON", rs1.getBigDecimal("TON_wallet"));
+                res.put("RUB", rs1.getBigDecimal("RUB_wallet"));
+                return res;
+            }
+            else{
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: неверно указана валюта", null);
+                return error;
+            }
+
+
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
         return null;
     }
 
