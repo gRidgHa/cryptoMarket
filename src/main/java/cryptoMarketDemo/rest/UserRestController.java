@@ -1,6 +1,7 @@
 package cryptoMarketDemo.rest;
 
 import cryptoMarketDemo.models.User;
+import cryptoMarketDemo.servise.SecretKeyGenerator;
 import cryptoMarketDemo.servise.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -24,21 +26,16 @@ public class UserRestController {
     private UserService userService;
 
 
-
-    @GetMapping("getByEmail")
-    public ResponseEntity<List<User>> getUserbyEmail(@RequestHeader("email") String email) throws SQLException {
+    @GetMapping("register")
+    public ResponseEntity<String> seeBalance(@RequestHeader("username") String username, @RequestHeader("email") String email) throws SQLException {
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
-        if (email == null) {
+        if (username == null || email == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        String resp = this.userService.register(username, email, con);
+        con.close();
 
-        List<User> user = this.userService.findUserByEmail(email, con);
-
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
     @GetMapping("seeBalance")
@@ -47,14 +44,20 @@ public class UserRestController {
         if (secret_key == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
         HashMap<String, BigDecimal> hm = this.userService.seeBalance(secret_key, con);
-
-        if (secret_key == null) { //TODO переписать эту проверку
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
+        con.close();
         return new ResponseEntity<>(hm, HttpStatus.OK);
+    }
+
+    @PostMapping("topUpTheBalance")
+    public ResponseEntity<HashMap<String, BigDecimal>> topUpTheBalance(@RequestHeader("secret_key") String secret_key, @RequestHeader("balance") BigDecimal balance) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null || balance == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        HashMap<String, BigDecimal> resp = this.userService.topUpTheBalance(secret_key, balance, con);
+        con.close();
+        return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
 

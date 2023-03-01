@@ -7,20 +7,16 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 
 
 public interface UserService {
 
-    //User findUserBySecretKey(String secretKey);
 
-    List<User> findUserByEmail(String email, Connection con) throws SQLException;
-
-    User register(User user); // регистрация
+    String register(String username, String email, Connection con) throws SQLException; // регистрация
 
     HashMap<String, BigDecimal> seeBalance(String secret_key, Connection con) throws SQLException; //просмотр баланса кошелька
 
-    User topUpTheBalance(Long id, BigDecimal balance); //пополнение кошелька
+    HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) throws SQLException; //пополнение кошелька
 
     User withdraw(Long id, String currency, BigDecimal count, String credit_card);  //вывод денег с кошелька
 
