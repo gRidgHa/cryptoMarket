@@ -35,6 +35,7 @@ public class UserServiseImplementation implements UserService {
         catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return null;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class UserServiseImplementation implements UserService {
     }
 
     @Override
-    public HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) throws SQLException {
+    public HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) {
         try (Statement stmt = con.createStatement()) {
             String query_out = String.format("select RUB_wallet from user_table where secret_key = '%s'", secret_key);
             ResultSet rs1 = stmt.executeQuery(query_out);
@@ -80,11 +81,45 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
-
     @Override
-    public User withdraw(Long id, String currency, BigDecimal count, String credit_card) {
+    public HashMap<String, BigDecimal> withdraw(String secret_key, String currency, BigDecimal count, String credit_card, Connection con) throws SQLException {
+        try (Statement stmt = con.createStatement()) {
+            String query_out = String.format("select %s_wallet from user_table where secret_key = '%s'", currency, secret_key);
+            ResultSet rs1 = stmt.executeQuery(query_out);
+            if (rs1.next()){
+                BigDecimal oldBalance = rs1.getBigDecimal("RUB_wallet");
+                if (oldBalance.compareTo(count) >= 0){
+                    oldBalance = oldBalance.subtract(count);
+                    String query_in = String.format("update user_table set %s_wallet = %f where secret_key = '%s'", currency, oldBalance, secret_key).replace(',', '.');
+                    stmt.executeUpdate(query_in);
+                    HashMap<String, BigDecimal> res = new HashMap<>();
+                    String resString = String.format("%s_balance", currency);
+                    res.put(resString, oldBalance);
+                    return res;
+
+                }
+                else{
+                    HashMap<String, BigDecimal> error = new HashMap<>();
+                    error.put("Ошибка: не хватает средств", null);
+                    return error;
+                }
+
+            }
+            else {
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: кошелёк не найден", null);
+                return error;
+            }
+
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
         return null;
     }
+
+
 
     @Override
     public User seeTheExchangeRate(Long id, String currency) {

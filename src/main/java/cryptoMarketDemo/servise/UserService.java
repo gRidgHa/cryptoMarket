@@ -18,7 +18,7 @@ public interface UserService {
 
     HashMap<String, BigDecimal> topUpTheBalance(String secret_key, BigDecimal balance, Connection con) throws SQLException; //пополнение кошелька
 
-    User withdraw(Long id, String currency, BigDecimal count, String credit_card);  //вывод денег с кошелька
+    HashMap<String, BigDecimal> withdraw(String secret_key,String currency,BigDecimal count,String credit_card,Connection con) throws SQLException;  //вывод денег с кошелька
 
     User seeTheExchangeRate(Long id, String currency); //просмотр актуального курса валют
 

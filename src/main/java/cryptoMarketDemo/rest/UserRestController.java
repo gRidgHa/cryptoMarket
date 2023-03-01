@@ -27,7 +27,8 @@ public class UserRestController {
 
 
     @GetMapping("register")
-    public ResponseEntity<String> seeBalance(@RequestHeader("username") String username, @RequestHeader("email") String email) throws SQLException {
+    public ResponseEntity<String> seeBalance(@RequestHeader("username") String username,
+                                             @RequestHeader("email") String email) throws SQLException {
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
         if (username == null || email == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -50,12 +51,28 @@ public class UserRestController {
     }
 
     @PostMapping("topUpTheBalance")
-    public ResponseEntity<HashMap<String, BigDecimal>> topUpTheBalance(@RequestHeader("secret_key") String secret_key, @RequestHeader("RUB_wallet") BigDecimal balance) throws SQLException {
+    public ResponseEntity<HashMap<String, BigDecimal>> topUpTheBalance(@RequestHeader("secret_key") String secret_key,
+                                                                       @RequestHeader("RUB_wallet") BigDecimal balance) throws SQLException {
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
         if (secret_key == null || balance == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         HashMap<String, BigDecimal> resp = this.userService.topUpTheBalance(secret_key, balance, con);
+        con.close();
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
+
+    @PostMapping("withdraw")
+    public ResponseEntity<HashMap<String, BigDecimal>> withdraw(@RequestHeader("secret_key") String secret_key,
+                                                                @RequestHeader("currency") String currency,
+                                                                @RequestHeader("count") BigDecimal count,
+                                                                @RequestHeader("credit_card") String credit_card
+                                                                ) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null || currency == null || count == null || credit_card == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        HashMap<String, BigDecimal> resp = this.userService.withdraw(secret_key, currency, count, credit_card, con);
         con.close();
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
