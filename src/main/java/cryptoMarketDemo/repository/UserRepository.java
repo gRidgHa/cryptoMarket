@@ -6,6 +6,4 @@ import java.util.List;
 
 
 public interface UserRepository extends JpaRepository<User, String> {
-    //User findUserBySecret_key(String secret_key);
-    //List<User> findUserByEmail(String email);
 }
