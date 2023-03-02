@@ -208,11 +208,32 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
-
     @Override
-    public User changeExchangeRate(Long id, String baseCurrency, BigDecimal first_value, BigDecimal second_value) {
+    public HashMap<String, BigDecimal> changeExchangeRate(String base_currency, BigDecimal BTC, BigDecimal TON, BigDecimal RUB, Connection con) throws SQLException {
+        try (Statement stmt = con.createStatement()) {
+            String query_in1 = String.format("update exchange_rate_table set BTC_wallet = %f where base_currency = '%s'", BTC, base_currency).replace(',', '.');
+            String query_in2 = String.format("update exchange_rate_table set TON_wallet = %f where base_currency = '%s'", TON, base_currency).replace(',', '.');
+            String query_in3 = String.format("update exchange_rate_table set RUB_wallet = %f where base_currency = '%s'", RUB, base_currency).replace(',', '.');
+            stmt.executeUpdate(query_in1);
+            stmt.executeUpdate(query_in2);
+            stmt.executeUpdate(query_in3);
+
+            String query_out_res = String.format("Select * from exchange_rate_table where base_currency = '%s'", base_currency);
+            HashMap<String, BigDecimal> response = new HashMap<>();
+            ResultSet resultSet = stmt.executeQuery(query_out_res);
+            if (resultSet.next()){
+                response.put("BTS", resultSet.getBigDecimal("BTC_wallet"));
+                response.put("TON", resultSet.getBigDecimal("TON_wallet"));
+                response.put("RUB", resultSet.getBigDecimal("RUB_wallet"));
+                return response;
+            }
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
         return null;
     }
+
 
     @Override
     public HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(Long id, String baseCurrency) {
