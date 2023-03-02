@@ -88,6 +88,20 @@ public class UserRestController {
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
 
+    @PostMapping("exchangeCurrency")
+    public ResponseEntity<HashMap<String, String>> exchangeCurrency(@RequestHeader("secret_key") String secret_key,
+                                                                    @RequestHeader("currency_from") String currency_from,
+                                                                    @RequestHeader("currency_to") String  currency_to,
+                                                                    @RequestHeader("amount") BigDecimal amount) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null || currency_from == null || currency_to == null || amount == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        HashMap<String, String> resp = this.userService.exchangeCurrency(secret_key, currency_from, currency_to, amount, con);
+        con.close();
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
+
 
 }
 

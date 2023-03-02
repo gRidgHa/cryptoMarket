@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS TRANSACTION_TABLE
 CREATE TABLE IF NOT EXISTS EXCHANGE_RATE_TABLE
 (
     base_currency VARCHAR(3) PRIMARY KEY,
-    BTC_wallet DECIMAL,
-    TON_wallet DECIMAL,
-    RUB_wallet DECIMAL
+    BTC_wallet DECIMAL not null,
+    TON_wallet DECIMAL not null,
+    RUB_wallet DECIMAL not null
 );
 

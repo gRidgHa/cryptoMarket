@@ -147,9 +147,67 @@ public class UserServiseImplementation implements UserService {
     }
 
     @Override
-    public User exchangeCurrency(Long id, String currencyFrom, String currencyTo, BigDecimal amount) {
+    public HashMap<String, String> exchangeCurrency(String secret_key, String currency_from, String currency_to, BigDecimal amount, Connection con) throws SQLException {
+        try (Statement stmt = con.createStatement()) {
+            String query_out = String.format("Select %s_wallet from user_table where secret_key = '%s'", currency_from, secret_key);
+            ResultSet rs1 = stmt.executeQuery(query_out);
+            if (rs1.next()){
+                String rs1String = String.format("%s_wallet", currency_from);
+                BigDecimal soldCurrency = rs1.getBigDecimal(rs1String).subtract(amount); // количество оставшейся обменянной валюты
+                if (rs1.getBigDecimal(rs1String).compareTo(amount) >= 0){ // хватает ли средств
+                    String query_out2 = String.format("Select %s_wallet from exchange_rate_table where base_currency = '%s'", currency_from, currency_to);
+                    String rs2String = String.format("%s_wallet", currency_from); // курс для новой валюты
+                    ResultSet rs2 = stmt.executeQuery(query_out2);
+                    if (rs2.next()){
+                        BigDecimal newAmount = amount.divide(rs2.getBigDecimal(rs2String)); // количество новой валюты
+                        String query_out3 = String.format("Select %s_wallet from user_table where secret_key = '%s'", currency_to, secret_key);
+                        String rs3String = String.format("%s_wallet", currency_to);
+                        ResultSet rs3 = stmt.executeQuery(query_out3); // старое количество итоговой валюты
+                        if (rs3.next()){
+
+
+                            BigDecimal boughtCurrency = rs3.getBigDecimal(rs3String).add(newAmount); // нынешнее количество полученной валюты
+
+
+                            String query_in1 = String.format("update user_table set %s_wallet = %f where secret_key = '%s'", currency_from, soldCurrency, secret_key).replace(',', '.');
+                            stmt.executeUpdate(query_in1);
+                            String query_in2 = String.format("update user_table set %s_wallet = %f where secret_key = '%s'", currency_to, boughtCurrency, secret_key).replace(',', '.');
+                            stmt.executeUpdate(query_in2);
+
+                            String query_out_res = String.format("Select %s_wallet, %s_wallet from user_table where secret_key = '%s'", currency_from, currency_to, secret_key);
+                            ResultSet resultSet = stmt.executeQuery(query_out_res);
+                            if (resultSet.next()){
+                                HashMap<String, String> response = new HashMap<>();
+                                response.put("currency_from", currency_from);
+                                response.put("currency_to", currency_to);
+                                response.put("amount_from", String.valueOf(resultSet.getBigDecimal(rs1String)));
+                                response.put("amount_to", String.valueOf(resultSet.getBigDecimal(rs3String)));
+                                return response;
+                            }
+                        }
+                    }
+                }
+                else {
+                    HashMap<String, String> error = new HashMap<>();
+                    error.put("Ошибка: ", "недостаточно средств на счету");
+                    return error;
+                }
+            }
+            else{
+                HashMap<String, String> error = new HashMap<>();
+                error.put("Ошибка: ", "неверно указана валюта или пользователь не найден");
+                return error;
+            }
+
+
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+
+        }
         return null;
     }
+
 
     @Override
     public User changeExchangeRate(Long id, String baseCurrency, BigDecimal first_value, BigDecimal second_value) {
