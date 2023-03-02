@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS USER_TABLE
 
 CREATE TABLE IF NOT EXISTS TRANSACTION_TABLE
 (
-    operation_date VARCHAR(50) PRIMARY KEY,
+    id int PRIMARY KEY,
+    operation_date VARCHAR(50) not null ,
     operation_type varchar(50) NOT NULL
 
 );

@@ -127,6 +127,18 @@ public class UserRestController {
         con.close();
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
+    @GetMapping("seeAmountOfOperations")
+    public ResponseEntity<HashMap<String, BigDecimal>> seeAmountOfOperations(@RequestHeader("secret_key") String secret_key,
+                                                                             @RequestHeader("date_from") String date_from,
+                                                                             @RequestHeader("date_to") String date_to) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null || date_from == null || date_to == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        HashMap<String, BigDecimal> resp = this.userService.seeAmountOfOperations(secret_key, date_from, date_to, con);
+        con.close();
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
 
 
 }

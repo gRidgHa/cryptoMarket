@@ -33,13 +33,28 @@ public class UserServiseImplementation implements UserService {
         return false;
     }
 
-    public static void addTransaction(Statement stmt) throws SQLException {
+    public static void addTransaction(Statement stmt, String operation_type) throws SQLException {
         // добавление записи о транзакции
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDateTime now = LocalDateTime.now();
-        String data = dtf.format(now);
-        String query_operation = String.format("insert into transaction_table (operation_date, operation_type) values ('%s', 'exchangeCurrency')", data).replace('/', '.');
-        stmt.executeUpdate(query_operation);
+        ResultSet id = stmt.executeQuery("SELECT count(*) as count FROM transaction_table");
+        if (id.next()){
+            int rowCount = id.getInt("count");
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDateTime now = LocalDateTime.now();
+            String data = dtf.format(now);
+            String query_operation = String.format("insert into transaction_table (id, operation_date, operation_type) values ('%d', '%s', '%s')", rowCount, data, operation_type).replace('/', '.');
+            stmt.executeUpdate(query_operation);
+        }
+        else {
+            int rowCount = 0;
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDateTime now = LocalDateTime.now();
+            String data = dtf.format(now);
+            String query_operation = String.format("insert into transaction_table (id, operation_date, operation_type) values ('%d', '%s', '%s')", rowCount, data, operation_type).replace('/', '.');
+            stmt.executeUpdate(query_operation);
+        }
+
+
+
 
     }
 
@@ -97,7 +112,8 @@ public class UserServiseImplementation implements UserService {
             HashMap<String, BigDecimal> res = new HashMap<>();
             res.put("RUB_balance", balance);
 
-            addTransaction(stmt);
+            String operation_type = "topUpTheBalance";
+            addTransaction(stmt, operation_type);
 
             return res;
 
@@ -124,7 +140,8 @@ public class UserServiseImplementation implements UserService {
                     String resString = String.format("%s_balance", currency);
                     res.put(resString, oldBalance);
 
-                    addTransaction(stmt);
+                    String operation_type = "withdraw";
+                    addTransaction(stmt, operation_type);
                     return res;
 
                 }
@@ -213,7 +230,8 @@ public class UserServiseImplementation implements UserService {
                                 response.put("amount_from", String.valueOf(resultSet.getBigDecimal(rs1String)));
                                 response.put("amount_to", String.valueOf(resultSet.getBigDecimal(rs3String)));
 
-                                addTransaction(stmt);
+                                String operation_type = "exchangeCurrency";
+                                addTransaction(stmt, operation_type);
                                 return response;
 
                             }
@@ -300,10 +318,32 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
-
-
     @Override
-    public HashMap<String, BigDecimal> seeAmountOfOperations(Long id, String dateFrom, String dateTo) {
+    public HashMap<String, BigDecimal> seeAmountOfOperations(String secret_key, String date_from, String date_to, Connection con){
+        try (Statement stmt = con.createStatement()) {
+            if(!isAdmin(stmt, secret_key)){
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: у вас нет прав администратора", null);
+                return error;
+            }
+            String query_in = String.format("Select count(operation_date) as count from transaction_table" +
+                                            " where operation_date > '%s' and operation_date < '%s'", date_from, date_to);
+            HashMap<String, BigDecimal> response = new HashMap<>();
+            ResultSet resultSet = stmt.executeQuery(query_in);
+            if (resultSet.next()){
+                response.put("transaction_count", resultSet.getBigDecimal("count"));
+                return response;
+            }
+            else {
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: нет операций за выбранный период", null);
+                return error;
+            }
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
         return null;
     }
+
 }

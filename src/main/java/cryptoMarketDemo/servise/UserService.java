@@ -32,6 +32,6 @@ public interface UserService {
     HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(String secret_key, String currency,Connection con) throws SQLException;
                                                         //просмотреть общую сумму денег на счетах пользователей в конкретной валюте (админ)
 
-    HashMap<String, BigDecimal> seeAmountOfOperations(Long id, String dateFrom, String dateTo);
+    HashMap<String, BigDecimal> seeAmountOfOperations(String secret_key,String date_from,String date_to,Connection con) throws SQLException;
                                                             //просмотреть количество проведённых операций за выбранный период (админ)
 }
