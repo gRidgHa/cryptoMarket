@@ -65,7 +65,7 @@ public class UserServiseImplementation implements UserService {
         String secret_key = new String(generator.generatePassword());
         try (Statement stmt = con.createStatement()) {
             String query_check = String.format("select username, email from user_table where username = '%s' or email = '%s'", username, email);
-            if (stmt.executeQuery(query_check) != null){
+            if (stmt.executeQuery(query_check).next()){
                 return "Такой пользователь уже зарегистрирован";
             }
             String query_in = String.format("insert into user_table (secret_key, user_type, username, email, BTC_WALLET, TON_wallet, RUB_wallet) values ('%s', 'user', '%s', '%s', 0, 0, 0)", secret_key, username, email);
@@ -206,7 +206,7 @@ public class UserServiseImplementation implements UserService {
                     String rs2String = String.format("%s_wallet", currency_from); // курс для новой валюты
                     ResultSet rs2 = stmt.executeQuery(query_out2);
                     if (rs2.next()){
-                        BigDecimal newAmount = amount.divide(rs2.getBigDecimal(rs2String)); // количество новой валюты
+                        BigDecimal newAmount = amount.divide(rs2.getBigDecimal(rs2String), 6); // количество новой валюты
                         String query_out3 = String.format("Select %s_wallet from user_table where secret_key = '%s'", currency_to, secret_key);
                         String rs3String = String.format("%s_wallet", currency_to);
                         ResultSet rs3 = stmt.executeQuery(query_out3); // старое количество итоговой валюты
