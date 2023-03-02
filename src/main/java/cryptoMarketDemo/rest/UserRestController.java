@@ -102,16 +102,17 @@ public class UserRestController {
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
     @PostMapping("changeExchangeRate")
-    public ResponseEntity<HashMap<String, BigDecimal>> changeExchangeRate(@RequestHeader("base_currency") String base_currency,
-                                                                      @RequestHeader("BTC") BigDecimal BTC,
-                                                                      @RequestHeader("TON") BigDecimal  TON,
-                                                                      @RequestHeader("RUB") BigDecimal  RUB
+    public ResponseEntity<HashMap<String, BigDecimal>> changeExchangeRate(@RequestHeader("secret_key") String secret_key,
+                                                                          @RequestHeader("base_currency") String base_currency,
+                                                                          @RequestHeader("BTC") BigDecimal BTC,
+                                                                          @RequestHeader("TON") BigDecimal  TON,
+                                                                          @RequestHeader("RUB") BigDecimal  RUB
                                                                       ) throws SQLException {
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
         if (BTC == null || TON == null || RUB == null ) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        HashMap<String, BigDecimal> resp = this.userService.changeExchangeRate(base_currency, BTC, TON, RUB, con);
+        HashMap<String, BigDecimal> resp = this.userService.changeExchangeRate(secret_key,base_currency, BTC, TON, RUB, con);
         con.close();
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }

@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS USER_TABLE
 
 CREATE TABLE IF NOT EXISTS TRANSACTION_TABLE
 (
-    secret_key VARCHAR(50) PRIMARY KEY,
-    username   varchar(20) NOT NULL
+    operation_date VARCHAR(50) PRIMARY KEY,
+    operation_type varchar(50) NOT NULL
 
 );
 

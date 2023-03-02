@@ -26,7 +26,7 @@ public interface UserService {
     HashMap<String, String> exchangeCurrency(String secret_key, String currency_from, String currency_to, BigDecimal amount, Connection con) throws SQLException;
                                                                                                         //обмен валюты
 
-    HashMap<String, BigDecimal> changeExchangeRate(String base_currency, BigDecimal BTC,BigDecimal TON,BigDecimal RUB,Connection con) throws SQLException;
+    HashMap<String, BigDecimal> changeExchangeRate(String secret_key, String base_currency, BigDecimal BTC,BigDecimal TON,BigDecimal RUB,Connection con) throws SQLException;
                                                                                                         //изменение курса валют (админ)
 
     HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(String secret_key, String currency,Connection con) throws SQLException;

@@ -1,22 +1,47 @@
 package cryptoMarketDemo.servise;
 
-import cryptoMarketDemo.models.User;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
+
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Objects;
 
 @Service
 @Slf4j
 public class UserServiseImplementation implements UserService {
+
+    public static boolean isAdmin(Statement stmt, String secret_key) throws SQLException {
+        //проверка на соответствие типу "администратор"
+        String query_admin_check = String.format("Select user_type from user_table where secret_key = '%s'", secret_key);
+        ResultSet admin_check = stmt.executeQuery(query_admin_check);
+        if (admin_check.next()){
+            if (!Objects.equals(admin_check.getString("user_type"), "admin")){
+                return false;
+            }
+            else return true;
+        }
+        return false;
+    }
+
+    public static void addTransaction(Statement stmt) throws SQLException {
+        // добавление записи о транзакции
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDateTime now = LocalDateTime.now();
+        String data = dtf.format(now);
+        String query_operation = String.format("insert into transaction_table (operation_date, operation_type) values ('%s', 'exchangeCurrency')", data).replace('/', '.');
+        stmt.executeUpdate(query_operation);
+
+    }
 
 
     @Override
@@ -71,6 +96,9 @@ public class UserServiseImplementation implements UserService {
             stmt.executeUpdate(query_in);
             HashMap<String, BigDecimal> res = new HashMap<>();
             res.put("RUB_balance", balance);
+
+            addTransaction(stmt);
+
             return res;
 
         }
@@ -95,6 +123,8 @@ public class UserServiseImplementation implements UserService {
                     HashMap<String, BigDecimal> res = new HashMap<>();
                     String resString = String.format("%s_balance", currency);
                     res.put(resString, oldBalance);
+
+                    addTransaction(stmt);
                     return res;
 
                 }
@@ -182,7 +212,10 @@ public class UserServiseImplementation implements UserService {
                                 response.put("currency_to", currency_to);
                                 response.put("amount_from", String.valueOf(resultSet.getBigDecimal(rs1String)));
                                 response.put("amount_to", String.valueOf(resultSet.getBigDecimal(rs3String)));
+
+                                addTransaction(stmt);
                                 return response;
+
                             }
                         }
                     }
@@ -209,8 +242,14 @@ public class UserServiseImplementation implements UserService {
     }
 
     @Override
-    public HashMap<String, BigDecimal> changeExchangeRate(String base_currency, BigDecimal BTC, BigDecimal TON, BigDecimal RUB, Connection con) throws SQLException {
+    public HashMap<String, BigDecimal> changeExchangeRate(String secret_key, String base_currency, BigDecimal BTC, BigDecimal TON, BigDecimal RUB, Connection con) throws SQLException {
         try (Statement stmt = con.createStatement()) {
+            if(!isAdmin(stmt, secret_key)){
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: у вас нет прав администратора", null);
+                return error;
+            }
+
             String query_in1 = String.format("update exchange_rate_table set BTC_wallet = %f where base_currency = '%s'", BTC, base_currency).replace(',', '.');
             String query_in2 = String.format("update exchange_rate_table set TON_wallet = %f where base_currency = '%s'", TON, base_currency).replace(',', '.');
             String query_in3 = String.format("update exchange_rate_table set RUB_wallet = %f where base_currency = '%s'", RUB, base_currency).replace(',', '.');
@@ -237,6 +276,11 @@ public class UserServiseImplementation implements UserService {
     @Override
     public HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(String secret_key, String currency, Connection con) throws SQLException {
         try (Statement stmt = con.createStatement()) {
+            if(!isAdmin(stmt, secret_key)){
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: у вас нет прав администратора", null);
+                return error;
+            }
             String query_in1 = String.format("Select sum(%s_wallet) as sum from user_table", currency);
             HashMap<String, BigDecimal> response = new HashMap<>();
             ResultSet resultSet = stmt.executeQuery(query_in1);
