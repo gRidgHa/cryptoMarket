@@ -115,6 +115,17 @@ public class UserRestController {
         con.close();
         return new ResponseEntity<>(resp, HttpStatus.OK);
     }
+    @GetMapping("seeAmountOfSpecificCurrency")
+    public ResponseEntity<HashMap<String, BigDecimal>> seeAmountOfSpecificCurrency(@RequestHeader("secret_key") String secret_key,
+                                                                                   @RequestHeader("currency") String currency) throws SQLException {
+        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/relax", "postgres", "123456");
+        if (secret_key == null || currency == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        HashMap<String, BigDecimal> resp = this.userService.seeAmountOfSpecificCurrency(secret_key, currency, con);
+        con.close();
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+    }
 
 
 }

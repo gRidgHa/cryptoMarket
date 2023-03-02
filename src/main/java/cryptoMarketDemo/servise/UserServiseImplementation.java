@@ -234,11 +234,29 @@ public class UserServiseImplementation implements UserService {
         return null;
     }
 
-
     @Override
-    public HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(Long id, String baseCurrency) {
+    public HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(String secret_key, String currency, Connection con) throws SQLException {
+        try (Statement stmt = con.createStatement()) {
+            String query_in1 = String.format("Select sum(%s_wallet) as sum from user_table", currency);
+            HashMap<String, BigDecimal> response = new HashMap<>();
+            ResultSet resultSet = stmt.executeQuery(query_in1);
+            if (resultSet.next()){
+                response.put(currency, resultSet.getBigDecimal("sum"));
+                return response;
+            }
+            else {
+                HashMap<String, BigDecimal> error = new HashMap<>();
+                error.put("Ошибка: по данной валюте нет информации", null);
+                return error;
+            }
+        }
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
         return null;
     }
+
+
 
     @Override
     public HashMap<String, BigDecimal> seeAmountOfOperations(Long id, String dateFrom, String dateTo) {

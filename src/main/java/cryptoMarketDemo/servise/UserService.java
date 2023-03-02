@@ -29,7 +29,7 @@ public interface UserService {
     HashMap<String, BigDecimal> changeExchangeRate(String base_currency, BigDecimal BTC,BigDecimal TON,BigDecimal RUB,Connection con) throws SQLException;
                                                                                                         //изменение курса валют (админ)
 
-    HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(Long id, String baseCurrency);
+    HashMap<String, BigDecimal> seeAmountOfSpecificCurrency(String secret_key, String currency,Connection con) throws SQLException;
                                                         //просмотреть общую сумму денег на счетах пользователей в конкретной валюте (админ)
 
     HashMap<String, BigDecimal> seeAmountOfOperations(Long id, String dateFrom, String dateTo);
